@@ -44,7 +44,6 @@
     </style>
   </head>
   <body onkeyup="keyPress(event)">
-    <input type="file" name="" id="inputCsv" onchange="loaded(event)" />
     <input type="text" id="highlight" value="This" />
     <h1 id="title"></h1>
     <div>
@@ -66,15 +65,11 @@
       </ul>
     </div>
     <script>
-      let csv;
       let index = 0;
-      let len;
 
       function loaded(event) {
         var fr = new FileReader();
         fr.onload = function () {
-          csv = d3.csvParse(fr.result);
-          len = csv.length;
           render();
         };
         fr.readAsText(event.target.files[0]);
