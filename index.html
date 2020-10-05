@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Abstract Viewer</title>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.2.0/d3.js"></script>
 
     <style>
@@ -65,34 +64,40 @@
       </ul>
     </div>
     <script>
+      let len = 0;
       let index = 0;
 
-      function loaded(event) {
-        var fr = new FileReader();
-        fr.onload = function () {
+      fetch("/meta")
+        .then((x) => x.json())
+        .then((x) => {
+          len = x.len;
+          index = +x.idx;
           render();
-        };
-        fr.readAsText(event.target.files[0]);
-      }
+        });
 
       function render() {
         let highlights = highlight.value.split(",");
-        let row = csv[index];
-        let abstract = row["Abstract"];
-        highlights.forEach(
-          (h) =>
-            (abstract = abstract.replaceAll(h.trim(), "<mark>" + h + "</mark>"))
-        );
-        if (!("Related" in row)) row["Related"] = false;
-        title.innerText = row["Title"];
-        viewLeft.innerHTML = abstract;
-        viewRight.innerText = row["Translated"];
-        relation.innerText = row["Related"] ? "related" : "unrelated";
-        let csvStrig = d3.csvFormat(csv);
+        fetch("/row/" + index)
+          .then((x) => x.json())
+          .then((row) => {
+            let abstract = row["Abstract"];
+            highlights.forEach(
+              (h) =>
+                (abstract = abstract.replaceAll(
+                  h.trim(),
+                  "<mark>" + h + "</mark>"
+                ))
+            );
+            title.innerText = row["Title"];
+            viewLeft.innerHTML = abstract;
+            viewRight.innerText = row["Translated"];
+            relation.innerText = row["Related"] ? "related" : "unrelated";
+          });
       }
 
       function keyPress(event) {
         let keyCode = event.keyCode;
+        let related = false;
         switch (keyCode) {
           case 37:
             // Left
@@ -100,7 +105,7 @@
             break;
           case 38:
             // Up
-            csv[index]["Related"] = true;
+            related = true;
             break;
           case 39:
             // Right
@@ -108,10 +113,13 @@
             break;
           case 40:
             // Down
-            csv[index]["Related"] = false;
             break;
         }
-        render();
+        if (keyCode == 38 || keyCode == 40)
+          fetch("/update/" + index + "/" + related, {
+            method: "POST",
+          }).then((_) => render());
+        else render();
       }
     </script>
   </body>
