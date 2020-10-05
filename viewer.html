@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Abstract Viewer</title>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.2.0/d3.js"></script>
+
+    <style>
+      #title {
+        width: 60%;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+      }
+
+      #frame {
+        max-width: 1024px;
+        display: flex;
+        flex-direction: row;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 64px;
+      }
+
+      .viewer {
+        margin-left: 16px;
+        margin-right: 16px;
+      }
+
+      .annotation {
+        margin-top: 32px;
+      }
+
+      #relation {
+        font-weight: bold;
+      }
+
+      .centered {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body onkeyup="keyPress(event)">
+    <input type="file" name="" id="inputCsv" onchange="loaded(event)" />
+    <input type="text" id="highlight" value="This" />
+    <h1 id="title"></h1>
+    <div>
+      <p class="centered">
+        This document is marked as <span id="relation"></span>.
+      </p>
+    </div>
+    <div></div>
+    <div id="frame">
+      <div class="viewer" id="viewLeft"></div>
+      <div class="viewer" id="viewRight"></div>
+    </div>
+    <div class="annotation">
+      <ul>
+        <li>Left arrow : Previous document</li>
+        <li>Right arrow: Next document</li>
+        <li>Up arrow: Mark as related</li>
+        <li>Down arrow: Mark as related</li>
+      </ul>
+    </div>
+    <script>
+      let csv;
+      let index = 0;
+      let len;
+
+      function loaded(event) {
+        var fr = new FileReader();
+        fr.onload = function () {
+          csv = d3.csvParse(fr.result);
+          len = csv.length;
+          render();
+        };
+        fr.readAsText(event.target.files[0]);
+      }
+
+      function render() {
+        let highlights = highlight.value.split(",");
+        let row = csv[index];
+        let abstract = row["Abstract"];
+        highlights.forEach(
+          (h) =>
+            (abstract = abstract.replaceAll(h.trim(), "<mark>" + h + "</mark>"))
+        );
+        if (!("Related" in row)) row["Related"] = false;
+        title.innerText = row["Title"];
+        viewLeft.innerHTML = abstract;
+        viewRight.innerText = row["Translated"];
+        relation.innerText = row["Related"] ? "related" : "unrelated";
+        let csvStrig = d3.csvFormat(csv);
+      }
+
+      function keyPress(event) {
+        let keyCode = event.keyCode;
+        switch (keyCode) {
+          case 37:
+            // Left
+            if (index > 0) index--;
+            break;
+          case 38:
+            // Up
+            csv[index]["Related"] = true;
+            break;
+          case 39:
+            // Right
+            if (index < len) index++;
+            break;
+          case 40:
+            // Down
+            csv[index]["Related"] = false;
+            break;
+        }
+        render();
+      }
+    </script>
+  </body>
+</html>
