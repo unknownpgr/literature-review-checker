@@ -3,11 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Abstract Viewer</title>
+    <title>Related work processor</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.2.0/d3.js"></script>
-
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      html {
+        font-family: "Noto Sans KR", sans-serif;
+      }
+
       #title {
         width: 60%;
         margin-left: auto;
@@ -27,6 +34,7 @@
       .viewer {
         margin-left: 16px;
         margin-right: 16px;
+        width: 50%;
       }
 
       .annotation {
@@ -44,6 +52,7 @@
     </style>
   </head>
   <body onkeyup="keyPress(event)">
+    <label for="highlight">Enter text(comma delimited) to hightlight. </label>
     <input type="text" id="highlight" value="anonymous,Anonymous,익명" />
     <h1 id="title"></h1>
     <div>
@@ -51,6 +60,7 @@
         This document is marked as <span id="relation"></span>.
       </p>
     </div>
+    <div class="centered" id="counter"></div>
     <div></div>
     <div id="frame">
       <div class="viewer" id="viewLeft"></div>
@@ -60,8 +70,8 @@
       <ul>
         <li>Left arrow : Previous document</li>
         <li>Right arrow: Next document</li>
-        <li>Up arrow: Mark as related</li>
-        <li>Down arrow: Mark as related</li>
+        <li>Up arrow: Mark this document as related</li>
+        <li>Down arrow: Mark this document as unrelated</li>
       </ul>
     </div>
     <script>
@@ -100,6 +110,14 @@
             relation.innerHTML = row["Related"]
               ? '<span class="related">related<span>'
               : "unrelated";
+            counter.innerText =
+              index +
+              1 +
+              " of " +
+              len +
+              " (" +
+              Math.round(((index + 1) * 100) / len) +
+              "%)";
           });
       }
 
