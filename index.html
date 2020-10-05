@@ -33,17 +33,18 @@
         margin-top: 32px;
       }
 
-      #relation {
-        font-weight: bold;
-      }
-
       .centered {
         text-align: center;
+      }
+
+      .related {
+        color: #0a0;
+        font-weight: bold;
       }
     </style>
   </head>
   <body onkeyup="keyPress(event)">
-    <input type="text" id="highlight" value="This" />
+    <input type="text" id="highlight" value="anonymous,Anonymous,익명" />
     <h1 id="title"></h1>
     <div>
       <p class="centered">
@@ -81,17 +82,24 @@
           .then((x) => x.json())
           .then((row) => {
             let abstract = row["Abstract"];
-            highlights.forEach(
-              (h) =>
-                (abstract = abstract.replaceAll(
-                  h.trim(),
-                  "<mark>" + h + "</mark>"
-                ))
-            );
+            let translated = row["Translated"];
+            highlights.forEach((h) => {
+              if (h.length == 0) return;
+              abstract = abstract.replaceAll(
+                h.trim(),
+                "<mark>" + h + "</mark>"
+              );
+              translated = translated.replaceAll(
+                h.trim(),
+                "<mark>" + h + "</mark>"
+              );
+            });
             title.innerText = row["Title"];
             viewLeft.innerHTML = abstract;
-            viewRight.innerText = row["Translated"];
-            relation.innerText = row["Related"] ? "related" : "unrelated";
+            viewRight.innerHTML = translated;
+            relation.innerHTML = row["Related"]
+              ? '<span class="related">related<span>'
+              : "unrelated";
           });
       }
 
